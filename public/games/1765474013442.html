@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>MageDash</title>
+<style>
+body {
+  font-family: sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #222;
+  color: #fff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
+#game-container {
+  width: 800px;
+  height: 600px;
+  background-color: #333;
+  overflow: hidden;
+  position: relative;
+  border: 2px solid #555;
+}
+
+#player {
+  width: 30px;
+  height: 50px;
+  background-color: lightblue;
+  position: absolute;
+  bottom: 20px;
+  left: 50px;
+  border-radius: 5px;
+}
+
+.tower {
+  width: 40px;
+  height: 60px;
+  background-color: darkred;
+  position: absolute;
+  bottom: 20px;
+  border-radius: 5px;
+}
+
+.projectile {
+  width: 10px;
+  height: 10px;
+  background-color: yellow;
+  position: absolute;
+  border-radius: 50%;
+}
+
+.platform {
+  width: 100px;
+  height: 10px;
+  background-color: green;
+  position: absolute;
+  border-radius: 5px;
+}
+
+#score {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  font-size: 20px;
+}
+
+#game-over {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 30px;
+  background-color: rgba(0, 0, 0, 0.7);
+  padding: 20px;
+  border-radius: 10px;
+  display: none; /* Initially hidden */
+}
+
+#restart-button {
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  background-color: lightgreen;
+  border: none;
+  border-radius: 5px;
+}
+</style>
+</head>
+<body>
+
+<div id="game-container">
+  <div id="score">Score: 0</div>
+  <div id="player"></div>
+  <div id="game-over">
+    Game Over!
+    <button id="restart-button">Restart</button>
+  </div>
+</div>
+
+<script>
+const gameContainer = document.getElementById('game-container');
+const player = document.getElementById('player');
+const scoreDisplay = document.getElementById('score');
+const gameOverScreen = document.getElementById('game-over');
+const restartButton = document.getElementById('restart-button');
+
+let playerX = 50;
+let playerY = 20;
+let playerSpeedX = 0;
+let playerSpeedY = 0;
+let gravity = 0.5;
+let isJumping = false;
+let score = 0;
+let towers = [];
+let projectiles = [];
+let platforms = [];
+let gameRunning = true;
+let lastTowerSpawnTime = 0;
+let lastPlatformSpawnTime = 0;
+const towerSpawnInterval = 2000; // Spawn every 2 seconds
+const platformSpawnInterval = 3000;
+
+function spawnTower() {
+  const towerX = 800;
+  const towerY = 20;
+  const towerElement = document.createElement('div');
+  towerElement.classList.add('tower');
+  towerElement.style.left = towerX + 'px';
+  towerElement.style.bottom = towerY + 'px';
+  gameContainer.appendChild(towerElement);
+
+  towers.push({
+    x: towerX,
+    y: towerY,
+    element: towerElement,
+    speed: -2
+  });
+  lastTowerSpawnTime = Date.now();
+}
+
+function spawnPlatform() {
+  const platformX = 800;
+  const platformY = Math.random() * 200 + 100; // Random height
+  const platformElement = document.createElement('div');
+  platformElement.classList.add('platform');
+  platformElement.style.left = platformX + 'px';
+  platformElement.style.bottom = platformY + 'px';
+  gameContainer.appendChild(platformElement);
+
+  platforms.push({
+    x: platformX,
+    y: platformY,
+    element: platformElement,
+    speed: -2
+  });
+  lastPlatformSpawnTime = Date.now();
+}
+
+
+function moveTowers() {
+  for (let i = 0; i < towers.length; i++) {
+    towers[i].x += towers[i].speed;
+    towers[i].element.style.left = towers[i].x + 'px';
+
+    if (towers[i].x < -40) {
+      towers[i].element.remove();
+      towers.splice(i, 1);
+      i--;
+    }
+  }
+}
+
+function movePlatforms() {
+  for (let i = 0; i < platforms.length; i++) {
+    platforms[i].x += platforms[i].speed;
+    platforms[i].element.style.left = platforms[i].x + 'px';
+
+    if (platforms[i].x < -100) {
+      platforms[i].element.remove();
+      platforms.splice(i, 1);
+      i--;
+    }
+  }
+}
+
+function jump() {
+  if (!isJumping) {
+    playerSpeedY = 12;
+    isJumping = true;
+  }
+}
+
+function movePlayer() {
+  playerSpeedY -= gravity;
+  playerY += playerSpeedY;
+
+  // Platform collision detection
+  let onPlatform = false;
+  for (const platform of platforms) {
+    if (playerX + 30 > platform.x && playerX < platform.x + 100 &&
+        playerY <= platform.y + 10 && playerY + 50 >= platform.y) {
+      playerY = platform.y;
+      playerSpeedY = 0;
+      isJumping = false;
+      onPlatform = true;
+      break; // Only need to check collision with one platform
+    }
+  }
+
+  // Ground collision
+  if (playerY <= 20 && !onPlatform) {
+    playerY = 20;
+    playerSpeedY = 0;
+    isJumping = false;
+  }
+
+  player.style.bottom = playerY + 'px';
+}
+
+function checkCollisions() {
+    for (let i = 0; i < towers.length; i++) {
+        const tower = towers[i];
+
+        // Simple AABB collision detection
+        if (playerX < tower.x + 40 &&
+            playerX + 30 > tower.x &&
+            playerY < tower.y + 60 &&
+            playerY + 50 > tower.y) {
+            gameOver();
+            return;
+        }
+    }
+}
+
+
+function updateScore() {
+  score++;
+  scoreDisplay.textContent = 'Score: ' + score;
+}
+
+function gameOver() {
+  gameRunning = false;
+  gameOverScreen.style.display = 'block';
+}
+
+function resetGame() {
+  playerX = 50;
+  playerY = 20;
+  playerSpeedX = 0;
+  playerSpeedY = 0;
+  isJumping = false;
+  score = 0;
+  towers.forEach(tower => tower.element.remove());
+  towers = [];
+  platforms.forEach(platform => platform.element.remove());
+  platforms = [];
+  scoreDisplay.textContent = 'Score: 0';
+  gameOverScreen.style.display = 'none';
+  gameRunning = true;
+  lastTowerSpawnTime = 0;
+  lastPlatformSpawnTime = 0;
+}
+
+function gameLoop() {
+  if (!gameRunning) return;
+
+  movePlayer();
+  moveTowers();
+  movePlatforms();
+  checkCollisions();
+  updateScore();
+
+    // Spawn towers periodically
+    if (Date.now() - lastTowerSpawnTime > towerSpawnInterval) {
+        spawnTower();
+    }
+
+    // Spawn platforms periodically
+    if (Date.now() - lastPlatformSpawnTime > platformSpawnInterval) {
+        spawnPlatform();
+    }
+
+
+  requestAnimationFrame(gameLoop);
+}
+
+document.addEventListener('keydown', (event) => {
+  if (event.code === 'Space') {
+    jump();
+  }
+});
+
+restartButton.addEventListener('click', () => {
+    resetGame();
+    gameLoop();
+});
+
+// Initial tower spawn
+spawnTower();
+spawnPlatform();
+gameLoop();
+</script>
+
+</body>
+</html>

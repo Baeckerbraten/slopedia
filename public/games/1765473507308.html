@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Simple Sim</title>
+<style>
+body {
+  font-family: sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #f0f0f0;
+}
+
+#gameContainer {
+  width: 800px;
+  height: 600px;
+  border: 1px solid #ccc;
+  background-color: #fff;
+  position: relative;
+  overflow: hidden;
+}
+
+#stats {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background-color: rgba(255, 255, 255, 0.7);
+    padding: 5px;
+    border-radius: 5px;
+}
+
+#actions {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    background-color: rgba(255, 255, 255, 0.7);
+    padding: 5px;
+    border-radius: 5px;
+}
+
+.actionButton {
+    margin-right: 5px;
+    padding: 5px 10px;
+    border: 1px solid #ccc;
+    background-color: #eee;
+    cursor: pointer;
+    border-radius: 3px;
+}
+
+.actionButton:hover {
+    background-color: #ddd;
+}
+
+#messageBox {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+    display: none; /* Hidden by default */
+    z-index: 10;
+}
+
+#overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: none; /* Hidden by default */
+    z-index: 5;
+}
+</style>
+</head>
+<body>
+
+<div id="gameContainer">
+    <div id="overlay"></div>
+    <div id="messageBox">
+        <p id="messageText">Game Over!</p>
+        <button onclick="restartGame()">Restart</button>
+    </div>
+    <div id="stats">
+        <p>Happiness: <span id="happiness">50</span></p>
+        <p>Money: <span id="money">100</span></p>
+        <p>Time: <span id="time">0</span></p>
+    </div>
+    <div id="actions">
+        <button class="actionButton" onclick="work()">Work</button>
+        <button class="actionButton" onclick="relax()">Relax</button>
+        <button class="actionButton" onclick="buyItem()">Buy Item</button>
+    </div>
+</div>
+
+<script>
+let happiness = 50;
+let money = 100;
+let time = 0;
+let isGameOver = false;
+
+const happinessElement = document.getElementById("happiness");
+const moneyElement = document.getElementById("money");
+const timeElement = document.getElementById("time");
+const messageBox = document.getElementById("messageBox");
+const messageText = document.getElementById("messageText");
+const overlay = document.getElementById("overlay");
+
+function updateStats() {
+    happinessElement.textContent = happiness;
+    moneyElement.textContent = money;
+    timeElement.textContent = time;
+}
+
+function work() {
+    if (isGameOver) return;
+    money += 10;
+    happiness -= 5;
+    time++;
+    updateStats();
+    checkGameOver();
+}
+
+function relax() {
+    if (isGameOver) return;
+    happiness += 10;
+    money -= 5;
+    time++;
+    updateStats();
+    checkGameOver();
+}
+
+function buyItem() {
+    if (isGameOver) return;
+    if (money >= 20) {
+        money -= 20;
+        happiness += 15;
+        time++;
+        updateStats();
+        checkGameOver();
+    } else {
+        alert("Not enough money!");
+    }
+}
+
+function checkGameOver() {
+    if (happiness <= 0) {
+        gameOver("You are too unhappy!");
+    }
+    if (money <= 0) {
+        gameOver("You ran out of money!");
+    }
+
+    if (time >= 100){
+        gameOver("You lived a full life!");
+    }
+}
+
+function gameOver(message) {
+    isGameOver = true;
+    messageText.textContent = message;
+    messageBox.style.display = "block";
+    overlay.style.display = "block";
+}
+
+function restartGame() {
+    happiness = 50;
+    money = 100;
+    time = 0;
+    isGameOver = false;
+    updateStats();
+    messageBox.style.display = "none";
+    overlay.style.display = "none";
+}
+
+updateStats(); // Initial update
+</script>
+
+</body>
+</html>

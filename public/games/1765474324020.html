@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Wordcarft</title>
+<style>
+body {
+  font-family: sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #f0f0f0;
+  margin: 0;
+}
+
+#game-container {
+  width: 800px;
+  height: 600px;
+  background-color: #ffffff;
+  border: 1px solid #ccc;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+#car {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 50px;
+  height: 30px;
+  background-color: red;
+  text-align: center;
+  color: white;
+  line-height: 30px;
+}
+
+#word-display {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 24px;
+}
+
+#input-container {
+  position: absolute;
+  bottom: 70px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+#word-input {
+  padding: 8px;
+  font-size: 16px;
+}
+
+#road {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 20px;
+  background-color: gray;
+}
+
+#score-display {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 16px;
+}
+
+#message-display {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 20px;
+  color: green;
+  display: none; /* Initially hidden */
+}
+
+#game-over-message {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 24px;
+  color: red;
+  display: none;
+}
+
+#start-button {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  padding: 10px 20px;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+#instructions {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  font-size: 14px;
+}
+
+</style>
+</head>
+<body>
+
+<div id="game-container">
+  <div id="instructions">Type the word quickly to keep the car moving!</div>
+  <div id="word-display"></div>
+  <div id="input-container">
+    <input type="text" id="word-input">
+  </div>
+  <div id="car">Car</div>
+  <div id="road"></div>
+  <div id="score-display">Score: <span id="score">0</span></div>
+  <div id="message-display">Correct!</div>
+  <div id="game-over-message">Game Over!</div>
+  <button id="start-button">Start Game</button>
+</div>
+
+<script>
+const gameContainer = document.getElementById('game-container');
+const wordDisplay = document.getElementById('word-display');
+const wordInput = document.getElementById('word-input');
+const car = document.getElementById('car');
+const scoreDisplay = document.getElementById('score');
+const messageDisplay = document.getElementById('message-display');
+const gameOverMessage = document.getElementById('game-over-message');
+const startButton = document.getElementById('start-button');
+
+let words = ["magic", "dragon", "castle", "sword", "forest", "knight", "wizard", "potion", "quest", "artifact","goblin","elf","troll","griffin","phoenix"];
+let currentWord = "";
+let score = 0;
+let carPosition = 50; // Percentage
+let gameActive = false;
+let animationFrameId;
+
+function getRandomWord() {
+  return words[Math.floor(Math.random() * words.length)];
+}
+
+function updateWord() {
+  currentWord = getRandomWord();
+  wordDisplay.textContent = currentWord;
+}
+
+function updateScore() {
+  scoreDisplay.textContent = score;
+}
+
+function moveCar() {
+  car.style.left = carPosition + "%";
+}
+
+function checkInput() {
+  if (wordInput.value === currentWord) {
+    score++;
+    updateScore();
+    wordInput.value = "";
+    updateWord();
+    carPosition += 5; // Move the car further
+    if (carPosition > 95) {
+        carPosition = 95; // Cap position near the edge
+        //Show message that they won and reset
+        messageDisplay.textContent = "You reached the Magic Kingdom!";
+        messageDisplay.style.display = "block";
+        setTimeout(() => {
+          messageDisplay.style.display = "none";
+          resetGame();
+        }, 3000);
+    }
+    moveCar();
+    showMessage();
+
+  }
+}
+
+function showMessage() {
+  messageDisplay.style.display = "block";
+  setTimeout(() => {
+    messageDisplay.style.display = "none";
+  }, 1000);
+}
+
+function gameLoop() {
+    if (!gameActive) return;
+
+    carPosition -= 0.1; // Gradual car movement (slowing down)
+    if (carPosition < 5) carPosition = 5;
+
+    moveCar();
+
+    if (carPosition <= 0) {
+      gameOver();
+      return;
+    }
+    animationFrameId = requestAnimationFrame(gameLoop);
+}
+
+function startGame() {
+  score = 0;
+  carPosition = 50;
+  updateScore();
+  updateWord();
+  moveCar();
+  wordInput.value = "";
+  gameOverMessage.style.display = "none";
+  gameActive = true;
+  startButton.style.display = "none";
+  wordInput.focus();
+  animationFrameId = requestAnimationFrame(gameLoop);
+}
+
+function gameOver() {
+  gameActive = false;
+  gameOverMessage.style.display = "block";
+  startButton.style.display = "block";
+  cancelAnimationFrame(animationFrameId);
+}
+
+function resetGame() {
+    score = 0;
+    carPosition = 50;
+    updateScore();
+    updateWord();
+    moveCar();
+    wordInput.value = "";
+    gameOverMessage.style.display = "none";
+    startButton.style.display = "block";
+    startButton.style.display = 'block';
+    cancelAnimationFrame(animationFrameId);
+
+}
+
+wordInput.addEventListener("input", checkInput);
+startButton.addEventListener("click", startGame);
+
+
+</script>
+
+</body>
+</html>

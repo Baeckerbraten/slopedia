@@ -5,13 +5,47 @@
     <p>Generate games on the fly with AI.</p>
 </div>
 
-<div class="categories">
-    <h2>Explore Categories</h2>
-    <div class="category-grid">
-        <% categories.forEach(category => { %>
-            <a href="/category/<%= category %>" class="category-card">
-                <h3><%= category %></h3>
-            </a>
+<div class="recent-games">
+    <h2>Recently Generated Games</h2>
+    <div class="game-grid">
+        <% if (games && games.length > 0) { %>
+            <% games.forEach(game => { %>
+                <a href="/play/<%= game.id %>" class="game-card">
+                    <div class="thumbnail" style="background-image: url('<%= game.thumbnail || '/css/placeholder.png' %>')">
+                        <% if (!game.thumbnail) { %>
+                            <span>No Image</span>
+                        <% } %>
+                    </div>
+                    <div class="game-info">
+                        <h3><%= game.prompt.substring(0, 30) %>...</h3>
+                        <span class="tag"><%= game.type || 'Game' %></span>
+                    </div>
+                </a>
+            <% }); %>
+        <% } else { %>
+            <p>No games generated yet. Be the first!</p>
+        <% } %>
+    </div>
+</div>
+
+<div class="suggestions">
+    <h2>Try a Random Idea</h2>
+    <div class="suggestion-grid">
+        <% suggestions.forEach(suggestion => { %>
+            <form action="/generate" method="POST" class="suggestion-card">
+                <input type="hidden" name="title" value="<%= suggestion.title %>">
+                <input type="hidden" name="tags" value="<%= suggestion.tags.join(',') %>">
+                <input type="hidden" name="prompt" value="A <%= suggestion.tags.join(', ') %> game titled '<%= suggestion.title %>'">
+                <input type="hidden" name="type" value="<%= suggestion.tags[0] %>">
+                
+                <h3><%= suggestion.title %></h3>
+                <div class="tags">
+                    <% suggestion.tags.forEach(tag => { %>
+                        <span class="tag"><%= tag %></span>
+                    <% }); %>
+                </div>
+                <button type="submit" class="play-btn">Generate & Play</button>
+            </form>
         <% }); %>
     </div>
 </div>
