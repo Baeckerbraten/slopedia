@@ -1,0 +1,29 @@
+<%- include('partials/header') %>
+
+<h2>Search Results</h2>
+<p>You searched for: <strong><%= query %></strong></p>
+
+<div class="generation-prompt">
+    <p>Would you like to generate a game based on this idea?</p>
+    <form action="/generate" method="POST">
+        <input type="hidden" name="prompt" value="<%= query %>">
+        <button type="submit" class="generate-btn">Generate Game</button>
+    </form>
+</div>
+
+<style>
+    .generate-btn {
+        padding: 1rem 2rem;
+        font-size: 1.2rem;
+        background-color: #27ae60;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+    .generate-btn:hover {
+        background-color: #2ecc71;
+    }
+</style>
+
+<%- include('partials/footer') %>

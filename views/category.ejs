@@ -1,0 +1,29 @@
+<%- include('partials/header') %>
+
+<h2>Category: <%= category %></h2>
+
+<div class="generation-prompt">
+    <p>Generate a random game in the <strong><%= category %></strong> genre?</p>
+    <form action="/generate" method="POST">
+        <input type="hidden" name="prompt" value="A fun <%= category %> game">
+        <input type="hidden" name="type" value="<%= category %>">
+        <button type="submit" class="generate-btn">Generate <%= category %> Game</button>
+    </form>
+</div>
+
+<style>
+    .generate-btn {
+        padding: 1rem 2rem;
+        font-size: 1.2rem;
+        background-color: #27ae60;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+    .generate-btn:hover {
+        background-color: #2ecc71;
+    }
+</style>
+
+<%- include('partials/footer') %>

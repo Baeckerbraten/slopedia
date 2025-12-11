@@ -1,0 +1,14 @@
+<%- include('partials/header') %>
+
+<h2>Playing: Generated Game</h2>
+<p>Prompt: <%= prompt %></p>
+
+<div class="game-container">
+    <iframe id="gameFrame" sandbox="allow-scripts" srcdoc="<%= gameCode %>"></iframe>
+</div>
+
+<div class="controls">
+    <a href="/" class="btn">Back to Home</a>
+</div>
+
+<%- include('partials/footer') %>

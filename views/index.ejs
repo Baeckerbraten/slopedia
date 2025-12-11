@@ -1,0 +1,19 @@
+<%- include('partials/header') %>
+
+<div class="hero">
+    <h1>Welcome to SLOPGAMES</h1>
+    <p>Generate games on the fly with AI.</p>
+</div>
+
+<div class="categories">
+    <h2>Explore Categories</h2>
+    <div class="category-grid">
+        <% categories.forEach(category => { %>
+            <a href="/category/<%= category %>" class="category-card">
+                <h3><%= category %></h3>
+            </a>
+        <% }); %>
+    </div>
+</div>
+
+<%- include('partials/footer') %>
